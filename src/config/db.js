@@ -1,7 +1,13 @@
 import { Sequelize } from "sequelize"
-import { DATABASE_URL } from "./constants"
+// import { DATABASE_URL } from "./constants.js"
 
-const db = new Sequelize(DATABASE_URL, {
+const db = new Sequelize({
+  database: "loja",
+  username: "root",
+  password: "root",
+  dialect: "mysql",
+  host: "localhost",
+  port: 3306,
   define: {
     timestamps: true,
     charset: "utf8",
