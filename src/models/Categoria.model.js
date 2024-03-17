@@ -1,5 +1,5 @@
 import { DataTypes } from "sequelize"
-import db from "../config/db"
+import db from "../config/db.js"
 
 const Categoria = db.define("categorias", {
   id: {
@@ -15,5 +15,7 @@ const Categoria = db.define("categorias", {
     type: DataTypes.TEXT,
   },
 })
+
+await Categoria.sync({ force: false })
 
 export default Categoria

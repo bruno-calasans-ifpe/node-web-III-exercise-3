@@ -28,4 +28,6 @@ try {
   console.error("Unable to connect to the database:", error)
 }
 
+await db.sync({ force: true })
+
 export default db
