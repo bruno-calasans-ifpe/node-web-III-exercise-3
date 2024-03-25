@@ -1,15 +1,14 @@
 import express from "express"
-import Categoria from "../models/Categoria.model.js"
+import db from "../config/db.js"
 
 const router = express.Router()
 
 router.get("/", async (req, res) => {
   try {
-    const categorias = await Categoria.findAll({ raw: true })
+    const [categorias] = await db.query("select * from categorias")
     res.json(categorias)
   } catch (error) {
-    console.log(error)
-    res.status(500).json("Server error")
+    res.status(500).json({ mesage: "Server error" })
   }
 })
 
@@ -20,8 +19,12 @@ router.get("/:id", async (req, res) => {
     if (!idCategoria)
       return res.status(403).json("Id da categoria está faltando")
 
-    const categoria = await Categoria.findByPk(idCategoria)
-    if (!categoria) return res.status(404).json("Categoria não encontrada")
+    const [categoria] = await db.query(
+      `select * from categorias where id = ${idCategoria}`
+    )
+
+    if (categoria.length === 0)
+      return res.status(404).json("Categoria não encontrada")
 
     res.json(categoria)
   } catch (error) {
@@ -33,9 +36,10 @@ router.post("/", async (req, res) => {
   try {
     const { nome, descricao } = req.body
     if (!nome || !descricao) return res.status(403).json("Dados faltando")
-
-    const categoria = await Categoria.create({ nome, descricao })
-    res.json(categoria)
+    await db.query(
+      `insert into categorias (nome, descricao) values ('${nome}', '${descricao}')`
+    )
+    res.json("Categoria criada com sucesso!")
   } catch (error) {
     res.status(500).json("Server error")
   }
@@ -44,16 +48,22 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     const idCategoria = req.params.id
-    const categoriaDado = req.body
+    const { nome, descricao } = req.body
 
     if (!idCategoria)
       return res.status(403).json("Id da categoria está faltando")
 
-    const categoria = await Categoria.findByPk(idCategoria)
-    if (!categoria) return res.status(404).json("Categoria não encontrada")
+    const [categoria] = await db.query(
+      `select * from categorias where id = ${idCategoria}`
+    )
+    if (categoria.length == 0)
+      return res.status(404).json("Categoria não encontrada")
 
-    await categoria.update(categoriaDado)
-    res.json(categoria)
+    await db.query(
+      `update categorias set nome = '${nome}', descricao = '${descricao}' where id = '${idCategoria}'`
+    )
+
+    res.json("Categoria atualizada com sucesso")
   } catch (error) {
     console.log(error)
     res.status(500).json("Server error")
@@ -67,13 +77,19 @@ router.delete("/:id", async (req, res) => {
     if (!idCategoria)
       return res.status(403).json("Id da categoria está faltando")
 
-    const categoria = await Categoria.findByPk(idCategoria)
-    if (!categoria) return res.status(404).json("Categoria não encontrada")
+    const [categoria] = await db.query(
+      `select * from categorias where id = ${idCategoria}`
+    )
+    if (categoria.length == 0)
+      return res.status(404).json("Categoria não encontrada")
 
-    await categoria.destroy()
-    res.json("Categoria deletada")
+    if (categoria.length == 0)
+      return res.status(404).json("Categoria não encontrada")
+
+    await db.query(`delete from categorias where id ='${idCategoria}'`)
+
+    res.json("Categoria deletada com sucesso!")
   } catch (error) {
-    console.log(error.name)
     res.status(500).json("Server error")
   }
 })
